@@ -1,0 +1,12 @@
+# Core requirements
+torch>=2.3.0
+torchtext>=0.18.0
+torchdata
+pytorch-lightning
+dill
+tensorboard
+gensim
+
+# Optional but recommended for text processing
+spacy>=3.0.0
+tqdm>=4.0.0  # For progress bars
