@@ -127,7 +127,7 @@ All tests are run in MAC mini M4
 
 # 5. Tensor Board
 ```
-tensorboard --logdir=logs --port=6007
+tensorboard --logdir=logs --port=6006
 ```
 From browser
 ```
