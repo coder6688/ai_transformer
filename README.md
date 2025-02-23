@@ -135,5 +135,5 @@ tensorboard --logdir=logs --port=6006
 ```
 From browser
 ```
-http://localhost:6007
+http://localhost:6006
 ```
