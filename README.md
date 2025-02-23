@@ -1,3 +1,7 @@
+**Important Links**  
+> [📌 Project Notes](./Notes.md)
+
+
 # 1. Overview
 ```
 # Transformer Architecture Experiments
