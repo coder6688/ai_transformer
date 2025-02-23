@@ -22,6 +22,8 @@ This project implements a bidirectional Transformer encoder for three sequence p
      - Constant learning rate
    - Achieved 87% validation accuracy with 4 attention heads
 
+TODO: Decoder
+
 ## Key Features
 - Multi-head attention implementation with configurable heads (4-8)
 - Three learning rate scheduling strategies:
