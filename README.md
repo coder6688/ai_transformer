@@ -102,19 +102,19 @@ The trainable parameters are too many given the limit training data. The perform
 ### Experiment with next word selection
 #### 1 Sampe from the largest probability value
 eg.
-```
+
 The edge of war , and the son of York , the Earl of York , , wake , , , , , , , wake , wake , wake , , , , , , , , , , wake , , , , , , , , , , , , , , , , , , ! , ! It beside beside beside , , , , , , ! ! , , , , , , , , , , , , , , , ! , , , , ! , ! , ! ! ! , , , , , , , , , beside , beside , , , , , , , , , , , , , , , , , , , , , , , beside , , , , , , , , , , , , , , , , , , , , , , , , , of Timon is the heavens , Claudius of Timon . , , , , , , , , , , , , , of York , , , , , , , , , , , , , , , , ,
-```
+
 #### 2 Random sample from top n values
-eg.
-```
+eg. top_n = 3
+
 The edge of war , which , that I might not have lost , Falstaff , , Falstaff , and , , , and , and , and , and enjoin'd to , and , and me , and , and , and , and , and me me , , and , and , , , and it me . me , , , and , and , Hector shrewd Helen , Gratiano , ' ' tis a ' club to ' ' me , ' says , , beside , beside ! ' ounce , ' , ' tis it , ' em , , my the other , the other is , ' em , ' ' , as I ' hearts of my . , ' em , I , , and , and that , and , and I , , , , , and , ' tis it , and , , and I have , I have it , , and , as , , I , as , , beside Troilus mine then , , , , , , ' tis , , ' says no , , ' tis as , ' , as I
-```
+
 #### 3 Random sample from top n pct values
 eg. top_pct = 0.95
-```
+
 The edge of war again you meet he ' right yet now for both Lord ! mine armour see enough too Alack when who lies a true for that would me ! It pieces bear of quoth past , boy but this ! will more with it now there ? we , to make ! or the devil . Do not this is an with me so your dead engine fellow I pray a child there over this your rue is all but all shame these mouths his house you : o sir o far behind he that they now my lord's a world are true ? They here I : are very reason like hot . Yet it come the king : but come thus young my way we spake fear her old deal done't the air out good Troilus well sink piece I fear thou tell arms from Saint now for a bastard say ' both , in young do there and up these commotion did conceive though humour fields for another wretch here do well he ' em like he fly you any Jack . Our your suit on't ' mistress was good is it then again : he cast with
-```
+
 
 # 2. Component Hierarchy
 ## Overview
