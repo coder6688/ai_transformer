@@ -4,19 +4,19 @@ import math
 
 class PositionNN(nn.Module):
     
-    def __init__(self, model_dim, max_seq_len=5000):
+    def __init__(self, embed_dim, max_seq_len=5000):
         super().__init__()
 
-        assert model_dim % 2 == 0, "Must be even number"
+        assert embed_dim % 2 == 0, "Must be even number"
         
         # Create position indices for tokens [0, 1, ..., max_len-1] as tensor of shape [max_seq_len, 1]
         # eg. [[0.], [1.], ..., [max_len-1.]]
         # providing verticle broadcast
         input_position = torch.arange(max_seq_len, dtype=torch.float).view(-1, 1)
 
-        constant = -math.log(10000.0) / model_dim
+        constant = -math.log(10000.0) / embed_dim
         # providing horizontal broadcast
-        exponent = torch.arange(0, model_dim, 2).float() * constant
+        exponent = torch.arange(0, embed_dim, 2).float() * constant
         frequency = torch.exp(exponent)
 
         # calculate the angle values for embeded dimension for each token
@@ -24,7 +24,7 @@ class PositionNN(nn.Module):
         angle_radians = input_position * frequency
 
         # position encoding
-        pos_encoding = torch.zeros(max_seq_len, model_dim)
+        pos_encoding = torch.zeros(max_seq_len, embed_dim)
         pos_encoding[:, 0::2] = torch.sin(angle_radians)
         pos_encoding[:, 1::2] = torch.cos(angle_radians)
 
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     # visualize the position encoding
     import matplotlib.pyplot as plt
 
-    posNN = PositionNN(model_dim=24, max_seq_len=100)
+    posNN = PositionNN(embed_dim=24, max_seq_len=100)
 
     pos_encoding = posNN.pos_encoding.squeeze().T.cpu().numpy()
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(8,3))

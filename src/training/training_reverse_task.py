@@ -8,6 +8,7 @@ from matplotlib import pyplot as plt
 from config.set_seed import set_seed
 from core.embedding_functions import embedding_torch
 from core.get_optimizer_lr import get_optimizer_with_lr
+from core.encoder_task_trainer import EncoderTaskTrainer
 from data.reverse_dataset import prepare_data_loader
 from visualization.plot_training_history import plot_training_history
 from training.training_common import show_attention_mat, training
@@ -23,7 +24,7 @@ if __name__ == "__main__":
     input_dim=train_loader.dataset.num_categories
     embed_dim=train_loader.dataset.num_categories
 
-    task_model, task_result = training(train_loader, val_loader, test_loader,
+    task_model, task_result = training(train_loader, val_loader, test_loader, EncoderTaskTrainer,
                                         task_name="ReverseTask",
                                         input_dim=input_dim,
                                         embed_dim=embed_dim,                                        
@@ -40,7 +41,8 @@ if __name__ == "__main__":
                                         lr=1e-3,
                                         warmup=50,                                                  
                                         optimizer_config=get_optimizer_with_lr("cosine_warmup"),
-                                        embedding_func=partial(embedding_torch, vocab=range(train_loader.dataset.num_categories), embed_dim=embed_dim)
+                                        embedding_func=partial(embedding_torch, vocab=range(train_loader.dataset.num_categories), embed_dim=embed_dim),
+                                        pad_id='x' # to avoid 0 as pad as it is from 0 to 9
                                         )
     
     print(f"Val accuracy:  {(100.0 * task_result['val'][0]['test_acc']):4.2f}%")

@@ -22,7 +22,6 @@ This project implements a bidirectional Transformer encoder for three sequence p
      - Constant learning rate
    - Achieved 87% validation accuracy with 4 attention heads
 
-TODO: Decoder
 
 ## Key Features
 - Multi-head attention implementation with configurable heads (4-8)
@@ -73,6 +72,49 @@ The trainable parameters are too many given the limit training data. The perform
 ```
 
 ![Sentiment Test](resources/sample_sentiment_tests_trainable_embedding.png)
+
+## Shakespeare Style Learning Task (Decoder)
+### Left-padding is important and improve training result
+### Pre-LayerNorm is better than Post-LayerNorm with different range of learning rate
+### Cosine warmup learning schedule is significantly more effective than constant learning schedule
+### Experiment with position encoding at embedding space or model space: not conclusive
+### Experiment with num_layers, 4 or 8: not conclusive
+### Experiment: Ensure tiny numbers in attention matrix according to mask to handle case where whole rows are 0.
+```
+  mask[0, 0, -2, :] = tensor([True, True, True, True, True, True, True, True, True, True, True, True,
+        True, True, True, True, True, True, True], device='mps:0')
+
+  attention_scores[0, 0, -2, :] = tensor([-1.0000e+18, -1.0000e+18, -1.0000e+18, -1.0000e+18, -1.0000e+18,
+        -1.0000e+18, -1.0000e+18, -1.0000e+18, -1.0000e+18, -1.0000e+18,
+        -1.0000e+18, -1.0000e+18, -1.0000e+18, -1.0000e+18, -1.0000e+18,
+        -1.0000e+18, -1.0000e+18, -1.0000e+18, -1.0000e+18], device='mps:0')
+
+  Before fix:
+  attention_mat[0, 0, -2, :] = tensor([0.0526, 0.0526, 0.0526, 0.0526, 0.0526, 0.0526, 0.0526, 0.0526, 0.0526,
+        0.0526, 0.0526, 0.0526, 0.0526, 0.0526, 0.0526, 0.0526, 0.0526, 0.0526,
+        0.0526], device='mps:0')
+
+  After fix:
+  attention_mat[0, 0, -2, :] = tensor([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
+       device='mps:0')
+```
+### Experiment with Embed Torch vs GloVe, Unfreeze: GloVe always worse than Embed
+### Experiment with next word selection
+#### 1 Sampe from the largest probability value
+eg.
+```
+The edge of war , and the son of York , the Earl of York , , wake , , , , , , , wake , wake , wake , , , , , , , , , , wake , , , , , , , , , , , , , , , , , , ! , ! It beside beside beside , , , , , , ! ! , , , , , , , , , , , , , , , ! , , , , ! , ! , ! ! ! , , , , , , , , , beside , beside , , , , , , , , , , , , , , , , , , , , , , , beside , , , , , , , , , , , , , , , , , , , , , , , , , of Timon is the heavens , Claudius of Timon . , , , , , , , , , , , , , of York , , , , , , , , , , , , , , , , ,
+```
+#### 2 Random sample from top n values
+eg.
+```
+The edge of war , which , that I might not have lost , Falstaff , , Falstaff , and , , , and , and , and , and enjoin'd to , and , and me , and , and , and , and , and me me , , and , and , , , and it me . me , , , and , and , Hector shrewd Helen , Gratiano , ' ' tis a ' club to ' ' me , ' says , , beside , beside ! ' ounce , ' , ' tis it , ' em , , my the other , the other is , ' em , ' ' , as I ' hearts of my . , ' em , I , , and , and that , and , and I , , , , , and , ' tis it , and , , and I have , I have it , , and , as , , I , as , , beside Troilus mine then , , , , , , ' tis , , ' says no , , ' tis as , ' , as I
+```
+#### 3 Random sample from top n pct values
+eg. top_pct = 0.95
+```
+The edge of war again you meet he ' right yet now for both Lord ! mine armour see enough too Alack when who lies a true for that would me ! It pieces bear of quoth past , boy but this ! will more with it now there ? we , to make ! or the devil . Do not this is an with me so your dead engine fellow I pray a child there over this your rue is all but all shame these mouths his house you : o sir o far behind he that they now my lord's a world are true ? They here I : are very reason like hot . Yet it come the king : but come thus young my way we spake fear her old deal done't the air out good Troilus well sink piece I fear thou tell arms from Saint now for a bastard say ' both , in young do there and up these commotion did conceive though humour fields for another wretch here do well he ' em like he fly you any Jack . Our your suit on't ' mistress was good is it then again : he cast with
+```
 
 # 2. Component Hierarchy
 ## Overview

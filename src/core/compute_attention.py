@@ -34,6 +34,11 @@ def compute_attention(q, k, v, mask=None):
     # which is column-wise. eg. make the sum of all columns in a row to be 1
     attention_mat = torch.softmax(attention_scores, dim=-1)
 
+    # For all zero rows, the attention_mat values actually become quite large uniform values.
+    # These need to be set to tiny number again using mask
+    if mask is not None:
+        attention_mat = attention_mat.masked_fill(mask, 0.0)
+
     # compute the transformed value vector to its contextual representation
     # or compute the weighted sum of v
     # attended_v: (batch_size, num_heads, seq_len, d_tensor)

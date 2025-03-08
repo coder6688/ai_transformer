@@ -1,6 +1,5 @@
 import sys
 from pathlib import Path
-
 sys.path.append(str(Path(__file__).parent.parent))
 
 import os
@@ -10,6 +9,7 @@ import torch.utils.data as data
 from config.set_seed import set_seed
 from core.get_optimizer_lr import get_optimizer_with_lr
 from core.embedding_functions import embedding_GloVe, embedding_torch, embedding_word2vec
+from core.encoder_task_trainer import EncoderTaskTrainer
 from data.imdb_dataset import prepare_data_loader
 from data.util import collate_batch, text_to_tensor
 from training.training_common import training
@@ -39,7 +39,7 @@ if __name__ == "__main__":
 
     input_dim = len(train_loader.dataset.vocab.get_itos())
     embed_dim = 300
-    task_model, task_result = training(train_loader, val_loader, test_loader,
+    task_model, task_result = training(train_loader, val_loader, test_loader, EncoderTaskTrainer,
                                         task_name="IMDBReviewTask",
                                         seq_len=512, # max-len of a sequence/sentence
                                         is_binary_classification=True,
@@ -58,7 +58,12 @@ if __name__ == "__main__":
                                         lr=5e-4,
                                         warmup=50,
                                         optimizer_config=get_optimizer_with_lr("linear_const_lr"),
-                                        embedding_func=partial(embedding_func, EMBEDDING_CHOICE=2, embed_dim=embed_dim),
+                                        embedding_func=partial(embedding_func, EMBEDDING_CHOICE=1, embed_dim=embed_dim),
+
+                                        # logging
+                                        log_every_n_steps=50,
+                                        limit_val_batches=0.1,
+                                        val_check_interval=0.5
                                         )
     
     print(f"Val accuracy:  {(100.0 * task_result['val'][0]['test_acc']):4.2f}%")
@@ -87,7 +92,7 @@ if __name__ == "__main__":
                  "A worst movie!"]
 
         data = [
-            (text_to_tensor(text), torch.tensor(0, dtype=torch.float32)) for text in texts
+            (text_to_tensor(vocab, tokenizer, text), torch.tensor(0, dtype=torch.float32)) for text in texts
         ]
 
         inputs, label = collate_batch(data)

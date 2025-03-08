@@ -22,6 +22,13 @@ gunzip GoogleNews-vectors-negative300.bin.gz
 # save it to embedding_data folder for training to load
 ```
 
+# Download Shakespear's play
+```
+pip install kaggle
+   kaggle datasets download -d kingburrito666/shakespeare-plays
+   unzip shakespeare-plays.zip
+```
+
 ## Local Python Virtual Environment Library List
 torch and torchtext must have compatible version.
 Local Environment: Mac Mini M4

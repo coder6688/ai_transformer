@@ -9,19 +9,22 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import CSVLogger, TensorBoardLogger
 
 from config.env import CHECKPOINT_PATH, device, get_device
-from core.task_trainer import TaskTrainer
+from core.encoder_task_trainer import EncoderTaskTrainer
 from visualization.plot_attention_mat import plot_attention_mat
 
 
-def training(train_loader, val_loader, test_loader, **kwargs):
+def training(train_loader, val_loader, test_loader, task_trainer_class, **kwargs):
     root_dir = os.path.join(CHECKPOINT_PATH, kwargs["task_name"])
     os.makedirs(root_dir, exist_ok=True)
 
     trainer = pl.Trainer(default_root_dir=root_dir,
                          logger=[CSVLogger(root_dir), TensorBoardLogger(root_dir)],
-                         log_every_n_steps=50, # when use large batch size, need to log more often, default 50
-                         limit_val_batches=0.2, # use this pct of total validation datasets
-                         val_check_interval=0.5, # make validation every quarter of an epoch of training
+                         # when use large batch size, need to log more often, default 50
+                         log_every_n_steps=kwargs['log_every_n_steps'] if 'log_every_n_steps' in kwargs else 50 , 
+                         # use this pct of total validation datasets
+                         limit_val_batches=kwargs['limit_val_batches'] if 'limit_val_batches' in kwargs else 1,
+                         # make validation every quarter of an epoch of training
+                         val_check_interval=kwargs['val_check_interval'] if 'val_check_interval' in kwargs else 1.0, 
                          callbacks=[ModelCheckpoint(save_weights_only=True, mode="max", monitor="val_acc")],
                          accelerator="gpu" if get_device() in ["cuda", "mps"] else "cpu",
                          devices=1,
@@ -32,9 +35,11 @@ def training(train_loader, val_loader, test_loader, **kwargs):
     pretrained_filename = os.path.join(CHECKPOINT_PATH, f"{kwargs['task_name']}.ckpt")
     if os.path.isfile(pretrained_filename):
         print("Found pretrained model, loading...")
-        model = TaskTrainer.load_from_checkpoint(pretrained_filename)
+        #model = EncoderTaskTrainer.load_from_checkpoint(pretrained_filename)
+        model = task_trainer_class.load_from_checkpoint(pretrained_filename)
     else:
-        model = TaskTrainer(max_iters=trainer.max_epochs*len(train_loader), **kwargs)
+        #model = EncoderTaskTrainer(max_iters=trainer.max_epochs*len(train_loader), **kwargs)
+        model = task_trainer_class(max_iters=trainer.max_epochs*len(train_loader), **kwargs)
 
     trainer.fit(model, train_loader, val_loader)
 

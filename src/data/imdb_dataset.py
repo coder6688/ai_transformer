@@ -3,47 +3,30 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
 import os
-import pathlib
+from functools import partial
+
 import torch
 import torch.utils.data as data
 import torchtext
 from torchtext.datasets import IMDB
 from torchtext.data.utils import get_tokenizer
-from torchtext.vocab import build_vocab_from_iterator
 
 from config.env import CHECKPOINT_PATH
-from data.util import collate_batch
+from data.util import build_vocab, collate_batch
 
 
 torchtext.disable_torchtext_deprecation_warning()
 
+def yield_tokens(tokenizer):
+
+    for label, text in IMDB(split="train"):
+        yield tokenizer(text)
+
+    for label, text in IMDB(split="test"):
+        yield tokenizer(text)
+
+
 # IMPORTANT: make sure training_loader and val_loader use the same vocab.
-def build_vocab(vocab_file=None):
-
-    path = pathlib.Path(vocab_file)
-    if path.exists() and path.is_file():
-        return torch.load(vocab_file)
-
-    tokenizer = get_tokenizer("basic_english")
-    
-    def yield_tokens():
-
-        for label, text in IMDB(split="train"):
-            yield tokenizer(text)
-    
-        for label, text in IMDB(split="test"):
-            yield tokenizer(text)
-    
-    vocab = build_vocab_from_iterator(
-        yield_tokens(),
-        specials=['<unk>', '<pad>'],
-        special_first=True
-    )
-    vocab.set_default_index(vocab['<unk>'])
-    torch.save(vocab, vocab_file)
-    return vocab
-
-
 class IMDBDataset(data.Dataset):
     def __init__(self, split='train', seq_len=512, size=25000):
         # seq_len: eg. the first 512 words used for prediction
@@ -59,7 +42,7 @@ class IMDBDataset(data.Dataset):
         
         root_dir = os.path.join(CHECKPOINT_PATH, "IMDBReviewTask")
         os.makedirs(root_dir, exist_ok=True)
-        self.vocab = build_vocab(root_dir + "/vocab_prebuild.pth")
+        self.vocab = build_vocab(partial(yield_tokens, self.tokenizer), root_dir + "/vocab_prebuild.pth")
 
         self.num_categories = len(self.vocab)
 
