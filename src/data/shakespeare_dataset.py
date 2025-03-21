@@ -7,7 +7,7 @@ from functools import partial
 
 import torch
 import torch.utils.data as data
-import torchtext
+import torchtext; torchtext.disable_torchtext_deprecation_warning()
 from torchtext.datasets import IMDB
 from torchtext.transforms import PadTransform, ToTensor, Truncate
 

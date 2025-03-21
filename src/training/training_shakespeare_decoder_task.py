@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
     vocab = train_loader.dataset.vocab
     vocab_size = len(train_loader.dataset.vocab)
-    num_layers = 8
+    num_layers = 16
     num_heads  = 4
     input_dim  = vocab_size # vocab_size, actually will be done by looking up by ids
     embed_dim  = 256 # 300 for GloVe 
@@ -41,7 +41,7 @@ if __name__ == "__main__":
                                         dropout=0.1, # 0.3: ~0.6 for 8hr
                                         input_dropout=0,
                                         max_epochs=200,
-                                        lr=1e-3, # 1e-2 best for Pre-Norm. Pre-Norm is much better than Post-Norm. 1e-3 for cosine_warmup
+                                        lr=1e-4, # 1e-3 for cold start, 1e-4 for warm start # 1e-2 best for Pre-Norm. Pre-Norm is much better than Post-Norm. 1e-3 for cosine_warmup
                                         warmup=500,                                                  
                                         optimizer_config=get_optimizer_with_lr("cosine_warmup"), #linear_const_lr cosine_warmup(very effective with 1e-3)
                                         embedding_func=partial(embedding_torch, vocab=train_loader.dataset.vocab, embed_dim=embed_dim),

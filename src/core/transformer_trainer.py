@@ -71,7 +71,8 @@ class TransformerTrainer(pl.LightningModule):
         torch.save({
             'state_dict': self.state_dict(),
             'hyper_parameters': self.hparams,
-            'pytorch-lightning_version': pl.__version__
+            'pytorch-lightning_version': pl.__version__,
+            'optimizer_states': self.trainer.optimizers[0].state_dict() if self.trainer else None,
         }, path)
         
         # Save functions in parallel file

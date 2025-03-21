@@ -13,9 +13,33 @@ from core.encoder_task_trainer import EncoderTaskTrainer
 from visualization.plot_attention_mat import plot_attention_mat
 
 
+class CustomModelCheckpoint(ModelCheckpoint):
+    def _save_checkpoint(self, trainer, filepath):
+        # Get the model
+        model = trainer.lightning_module
+        # Use custom save method
+        model.save_checkpoint(filepath)
+        self._last_global_step_saved = trainer.global_step
+
+
+
+
 def training(train_loader, val_loader, test_loader, task_trainer_class, **kwargs):
     root_dir = os.path.join(CHECKPOINT_PATH, kwargs["task_name"])
     os.makedirs(root_dir, exist_ok=True)
+
+    # intermediate checkpoint filename
+    pretrained_filename_intermediate = f"{kwargs['task_name']}_pretrained.pth"
+
+    checkpoint_callback = CustomModelCheckpoint(
+        dirpath=CHECKPOINT_PATH,
+        save_weights_only=False,
+        mode="max",
+        monitor="val_acc",
+        filename=f"{pretrained_filename_intermediate}",
+        verbose=True
+    )
+
 
     trainer = pl.Trainer(default_root_dir=root_dir,
                          logger=[CSVLogger(root_dir), TensorBoardLogger(root_dir)],
@@ -25,23 +49,25 @@ def training(train_loader, val_loader, test_loader, task_trainer_class, **kwargs
                          limit_val_batches=kwargs['limit_val_batches'] if 'limit_val_batches' in kwargs else 1,
                          # make validation every quarter of an epoch of training
                          val_check_interval=kwargs['val_check_interval'] if 'val_check_interval' in kwargs else 1.0, 
-                         callbacks=[ModelCheckpoint(save_weights_only=True, mode="max", monitor="val_acc")],
+                        #  callbacks=[ModelCheckpoint(
+                        #     save_weights_only=False, mode="max", monitor="val_acc",
+                        #     dirpath=CHECKPOINT_PATH, filename=f"{pretrained_filename_intermediate}", verbose=True)],
+                         callbacks=[checkpoint_callback],
                          accelerator="gpu" if get_device() in ["cuda", "mps"] else "cpu",
                          devices=1,
                          max_epochs=kwargs["max_epochs"],
                          gradient_clip_val=5)
 
     # Check whether pretrained model exists. If yes, load it and skip training
-    pretrained_filename = os.path.join(CHECKPOINT_PATH, f"{kwargs['task_name']}.ckpt")
+    pretrained_filename = os.path.join(CHECKPOINT_PATH, f"{kwargs['task_name']}.pth")
     if os.path.isfile(pretrained_filename):
         print("Found pretrained model, loading...")
-        #model = EncoderTaskTrainer.load_from_checkpoint(pretrained_filename)
         model = task_trainer_class.load_from_checkpoint(pretrained_filename)
     else:
-        #model = EncoderTaskTrainer(max_iters=trainer.max_epochs*len(train_loader), **kwargs)
         model = task_trainer_class(max_iters=trainer.max_epochs*len(train_loader), **kwargs)
 
     trainer.fit(model, train_loader, val_loader)
+    print("checkpoint to be saved at: {pretrained_filename}")
 
     # do a final validation on all val data
     val_result = trainer.test(model, val_loader, verbose=False)

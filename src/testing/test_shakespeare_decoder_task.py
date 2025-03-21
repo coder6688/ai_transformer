@@ -43,7 +43,7 @@ for text in texts:
 
     max_length = 200
     top_n = 3
-    top_pct = 0.95
+    top_pct = 0.90
     sample_approach = 3
     with torch.no_grad():
         while True:
@@ -67,6 +67,7 @@ for text in texts:
                     predicted_id = top_n_idx.squeeze_().tolist()[random_idx]
 
             text = vocab.get_itos()[predicted_id]
+            #print(f'predicted_id: {predicted_id}, text: {text}')
             
             if predicted_id not in [vocab['<pad>'], vocab['<eos>']]:
                 result.append(text)

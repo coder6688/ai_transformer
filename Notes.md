@@ -5,6 +5,10 @@ python src/training/training_reverse_task.py
 python src/training/training_shifted_seq_task.py
 python src/training/training_imdb_review_task.py
 ```
+## How to run tensorboard
+```
+tensorboard --logdir=/Users/rtong/workspace/saved_models/ShakespeareDecoderTask/lightning_logs/version_???
+```
 ## How to run test
 ```
 source <your_virtual_python_env>
